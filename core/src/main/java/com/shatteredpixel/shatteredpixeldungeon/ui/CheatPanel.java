@@ -43,6 +43,7 @@ public class CheatPanel extends Component {
 	private NinePatch panelBg;
 	private CheckBox immortalBox;
 	private RedButton expButton;
+	private RedButton giveButton;
 
 	@Override
 	protected void createChildren() {
@@ -71,6 +72,14 @@ public class CheatPanel extends Component {
 			}
 		};
 		add(expButton);
+
+		giveButton = new RedButton("Give item...") {
+			@Override
+			protected void onClick() {
+				com.shatteredpixel.shatteredpixeldungeon.windows.WndCheat.open();
+			}
+		};
+		add(giveButton);
 		refreshExpLabel();
 
 		//the always-visible translucent bar
@@ -121,18 +130,20 @@ public class CheatPanel extends Component {
 		panelBg.visible = panelBg.active = expanded;
 		immortalBox.visible = immortalBox.active = expanded;
 		expButton.visible = expButton.active = expanded;
+		giveButton.visible = giveButton.active = expanded;
 
 		if (expanded) {
 			float py = y + BAR_H + 1;
 			float rowH = 16;
 			panelBg.x = x;
 			panelBg.y = py;
-			panelBg.size(PANEL_W, rowH * 2 + 8);
+			panelBg.size(PANEL_W, rowH * 3 + 8);
 			panelBg.alpha(PANEL_ALPHA);
 
 			immortalBox.setRect(x + 4, py + 4, PANEL_W - 8, rowH);
 			expButton.setRect(x + 4, py + 4 + rowH, PANEL_W - 8, rowH);
-			height = BAR_H + 1 + rowH * 2 + 8;
+			giveButton.setRect(x + 4, py + 4 + rowH * 2, PANEL_W - 8, rowH);
+			height = BAR_H + 1 + rowH * 3 + 8;
 		} else {
 			height = BAR_H;
 		}
