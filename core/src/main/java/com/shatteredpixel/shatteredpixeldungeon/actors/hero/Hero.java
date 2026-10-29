@@ -1571,6 +1571,11 @@ if (buff(RoundShield.GuardTracker.class) != null){
 			return;
 		}
 
+		//personal-use cheat panel: immortality
+		if (com.shatteredpixel.shatteredpixeldungeon.ui.CheatPanel.immortal()) {
+			return;
+		}
+
 		//regular damage interrupt, triggers on any damage except specific mild DOT effects
 		// unless the player recently hit 'continue moving', in which case this is ignored
 		if (!(src instanceof Hunger || src instanceof Viscosity.DeferedDamage) && damageInterrupt) {
@@ -2007,6 +2012,9 @@ if (!Dungeon.level.visited[cell] && !Dungeon.level.mapped[cell]
 	
 	public void earnExp( long exp, Class source ) {
 
+		//personal-use cheat panel: exp multiplier
+		exp *= com.shatteredpixel.shatteredpixeldungeon.ui.CheatPanel.expMultiplier();
+
 		this.exp += exp;
 		this.totalExp += exp;
 		float percent = exp/(float)maxExp();
@@ -2166,6 +2174,12 @@ if (!Dungeon.level.visited[cell] && !Dungeon.level.mapped[cell]
 	
 	@Override
 	public void die( Object cause ) {
+
+		//personal-use cheat panel: immortality also covers direct die() calls
+		if (com.shatteredpixel.shatteredpixeldungeon.ui.CheatPanel.immortal()) {
+			if (HP <= 0) HP = 1;
+			return;
+		}
 		
 		curAction = null;
 

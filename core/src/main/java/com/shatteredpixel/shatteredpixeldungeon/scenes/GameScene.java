@@ -130,6 +130,7 @@ public class GameScene extends PixelScene {
 	private static boolean invVisible = true;
 
 	private Toolbar toolbar;
+	private com.shatteredpixel.shatteredpixeldungeon.ui.CheatPanel cheatPanel;
 	private Toast prompt;
 
 	private AttackIndicator attack;
@@ -370,6 +371,11 @@ public class GameScene extends PixelScene {
 		} else {
 			toolbar.setRect( 0, uiCamera.height - toolbar.height(), uiCamera.width, toolbar.height() );
 		}
+
+		cheatPanel = new com.shatteredpixel.shatteredpixeldungeon.ui.CheatPanel();
+		cheatPanel.camera = uiCamera;
+		cheatPanel.setPos( (uiCamera.width - com.shatteredpixel.shatteredpixeldungeon.ui.CheatPanel.PANEL_W) / 2f, 1 );
+		add( cheatPanel );
 
 		layoutTags();
 
