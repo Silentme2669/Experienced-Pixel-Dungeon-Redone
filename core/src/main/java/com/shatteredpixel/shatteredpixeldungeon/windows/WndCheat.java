@@ -37,6 +37,7 @@ import java.util.List;
 public class WndCheat {
 
 	private static final int MARGIN = 2;
+
 	private static int btnH() {
 		return PixelScene.landscape() ? 12 : 16;
 	}
@@ -113,11 +114,12 @@ public class WndCheat {
 		public Categories() {
 			super();
 			int width = width();
+			int contentW = width - MARGIN * 2;
 
 			RenderedTextBlock title = PixelScene.renderTextBlock("Give item: pick a category", 9);
 			title.hardlight(TITLE_COLOR);
+			title.maxWidth(contentW);
 			title.setPos(MARGIN, MARGIN);
-			title.maxWidth(width - MARGIN * 2);
 			add(title);
 
 			float top = title.bottom() + MARGIN * 2;
@@ -134,18 +136,18 @@ public class WndCheat {
 					}
 				};
 				content.add(btn);
-				btn.setRect(0, pos, width, btnH());
+				btn.setRect(0, pos, contentW, btnH());
 				pos += btnH() + 1;
 			}
-			content.setSize(width, pos);
+			content.setSize(contentW, pos);
 
 			scrollPane = new ScrollPane(content);
 			add(scrollPane);
 
-			//never taller than the screen; scrolls when the buttons don't fit
+			// never taller than ~90 % of the screen; scrolls when needed
 			int maxH = (int) (PixelScene.uiCamera.height * 0.9f) - (int) top - btnH() - MARGIN * 3;
 			int h = (int) Math.max(btnH(), Math.min(pos, maxH));
-			scrollPane.setRect(0, top, width, h);
+			scrollPane.setRect(MARGIN, top, contentW, h);
 
 			RedButton close = new RedButton("Close") {
 				@Override
@@ -154,15 +156,17 @@ public class WndCheat {
 				}
 			};
 			add(close);
-			close.setRect(0, top + h + MARGIN, width, btnH());
+			close.setRect(MARGIN, top + h + MARGIN, contentW, btnH());
 
-			resize(width, (int) close.bottom());
+			resize(width, (int) close.bottom() + MARGIN);
 		}
 
 		@Override
 		public void offset(int xOffset, int yOffset) {
 			super.offset(xOffset, yOffset);
-			if (scrollPane != null) scrollPane.setSize(scrollPane.width(), scrollPane.height());
+			if (scrollPane != null) {
+				scrollPane.setSize(scrollPane.width(), scrollPane.height());
+			}
 		}
 	}
 
@@ -174,9 +178,11 @@ public class WndCheat {
 		public ItemList(final String categoryName, final List<Class<? extends Item>> list) {
 			super();
 			final int width = width();
+			int contentW = width - MARGIN * 2;
 
 			RenderedTextBlock title = PixelScene.renderTextBlock(categoryName + " (" + list.size() + ")", 9);
 			title.hardlight(TITLE_COLOR);
+			title.maxWidth(contentW);
 			title.setPos(MARGIN, MARGIN);
 			add(title);
 
@@ -193,17 +199,17 @@ public class WndCheat {
 					}
 				};
 				content.add(btn);
-				btn.setRect(0, pos, width, btnH());
+				btn.setRect(0, pos, contentW, btnH());
 				pos += btnH() + 1;
 			}
-			content.setSize(width, pos);
+			content.setSize(contentW, pos);
 
 			scrollPane = new ScrollPane(content);
 			add(scrollPane);
 
 			int maxH = (int) (PixelScene.uiCamera.height * 0.9f) - (int) top - btnH() - MARGIN * 3;
 			int h = (int) Math.max(btnH(), Math.min(pos, maxH));
-			scrollPane.setRect(0, top, width, h);
+			scrollPane.setRect(MARGIN, top, contentW, h);
 
 			RedButton back = new RedButton("Back") {
 				@Override
@@ -213,15 +219,17 @@ public class WndCheat {
 				}
 			};
 			add(back);
-			back.setRect(0, top + h + MARGIN, width, btnH());
+			back.setRect(MARGIN, top + h + MARGIN, contentW, btnH());
 
-			resize(width, (int) back.bottom());
+			resize(width, (int) back.bottom() + MARGIN);
 		}
 
 		@Override
 		public void offset(int xOffset, int yOffset) {
 			super.offset(xOffset, yOffset);
-			if (scrollPane != null) scrollPane.setSize(scrollPane.width(), scrollPane.height());
+			if (scrollPane != null) {
+				scrollPane.setSize(scrollPane.width(), scrollPane.height());
+			}
 		}
 	}
 
@@ -251,11 +259,12 @@ public class WndCheat {
 			stackable = sample != null && sample.stackable;
 
 			int width = width();
+			int contentW = width - MARGIN * 2;
 
 			RenderedTextBlock title = PixelScene.renderTextBlock(display(cls), 9);
 			title.hardlight(TITLE_COLOR);
+			title.maxWidth(contentW);
 			title.setPos(MARGIN, MARGIN);
-			title.maxWidth(width - MARGIN * 2);
 			add(title);
 
 			float pos = title.bottom() + MARGIN * 3;
@@ -285,7 +294,7 @@ public class WndCheat {
 				}
 			};
 			add(get);
-			get.setRect(0, pos, width, btnH() + 2);
+			get.setRect(MARGIN, pos, contentW, btnH() + 2);
 
 			RedButton back = new RedButton("Back") {
 				@Override
@@ -295,12 +304,13 @@ public class WndCheat {
 				}
 			};
 			add(back);
-			back.setRect(0, get.bottom() + 1, width, btnH());
+			back.setRect(MARGIN, get.bottom() + 1, contentW, btnH());
 
-			resize(width, (int) back.bottom());
+			resize(width, (int) back.bottom() + MARGIN);
 		}
 
 		private float stepperRow(float pos, int width, int[] deltas, final boolean isAmount) {
+			// keep steppers full-width for easy tapping
 			float w = (width - (deltas.length - 1)) / (float) deltas.length;
 			for (int i = 0; i < deltas.length; i++) {
 				final int d = deltas[i];
@@ -342,7 +352,7 @@ public class WndCheat {
 				String name = item.name();
 				if (item.doPickUp(hero)) {
 					GLog.i(Messages.get(hero, "you_now_have", name));
-					//don't spend a turn on this
+					// don't spend a turn on this
 					hero.spend(-hero.cooldown());
 				} else {
 					Dungeon.level.drop(item, hero.pos).sprite.drop();
