@@ -147,7 +147,7 @@ public class WndCheat {
 			int maxH = (int) (PixelScene.uiCamera.height * 0.75f) - (int) top - btnH() - MARGIN * 3;
 			int h = (int) Math.max(btnH() * 3, Math.min(pos, maxH));
 			list.setRect(0, top, width, h);
-			list.layout();
+			list.setSize(width, h);          // public, triggers layout
 			list.scrollTo(0, 0);
 
 			RedButton close = new RedButton("Close") {
@@ -164,10 +164,10 @@ public class WndCheat {
 
 		@Override
 		public void offset(int xOffset, int yOffset) {
-			super.offset(xOffset, yOffset);
-			if (list != null) {
-				list.layout();
-			}
+		    super.offset(xOffset, yOffset);
+		    if (list != null) {
+		        list.setSize(list.width(), list.height());  // public replacement
+		    }
 		}
 	}
 
@@ -210,7 +210,7 @@ public class WndCheat {
 			int maxH = (int) (PixelScene.uiCamera.height * 0.75f) - (int) top - btnH() - MARGIN * 3;
 			int h = (int) Math.max(btnH() * 3, Math.min(pos, maxH));
 			list.setRect(0, top, width, h);
-			list.layout();
+			list.setSize(width, h);
 			list.scrollTo(0, 0);
 
 			RedButton back = new RedButton("Back") {
@@ -228,10 +228,10 @@ public class WndCheat {
 
 		@Override
 		public void offset(int xOffset, int yOffset) {
-			super.offset(xOffset, yOffset);
-			if (list != null) {
-				list.layout();
-			}
+		    super.offset(xOffset, yOffset);
+		    if (list != null) {
+		        list.setSize(list.width(), list.height());
+		    }
 		}
 	}
 
