@@ -104,30 +104,23 @@ public class WndCheat {
 	public static void open() {
 		GameScene.show(new Categories());
 	}
-
+	
 	// ---------------------------------------------------------------- step 1
-
+	
 	public static class Categories extends Window {
-		private ScrollPane list;
-
+	
 		public Categories() {
 			super();
 			int width = width();
-
+	
 			RenderedTextBlock title = PixelScene.renderTextBlock("Give item: pick a category", 9);
 			title.hardlight(TITLE_COLOR);
 			title.maxWidth(width - MARGIN * 2);
 			title.setPos(MARGIN, MARGIN);
 			add(title);
-
-			float top = title.bottom() + MARGIN * 2;
-
-			// Create pane first, then fill its content (more reliable)
-			list = new ScrollPane(new Component());
-			add(list);
-
-			Component content = list.content();
-			float pos = 0;
+	
+			float pos = title.bottom() + MARGIN * 2;
+	
 			for (int i = 0; i < CAT_NAMES.length; i++) {
 				final int index = i;
 				RedButton btn = new RedButton(CAT_NAMES[i]) {
@@ -137,19 +130,11 @@ public class WndCheat {
 						GameScene.show(new ItemList(CAT_NAMES[index], itemsFor(index)));
 					}
 				};
-				content.add(btn);
+				add(btn);
 				btn.setRect(0, pos, width, btnH());
 				pos += btnH() + 1;
 			}
-			content.setSize(width, pos);
-
-			// Cap height so the window stays reasonable
-			int maxH = (int) (PixelScene.uiCamera.height * 0.75f) - (int) top - btnH() - MARGIN * 3;
-			int h = (int) Math.max(btnH() * 3, Math.min(pos, maxH));
-			list.setRect(0, top, width, h);
-			list.setSize(width, h);          // public, triggers layout
-			list.scrollTo(0, 0);
-
+	
 			RedButton close = new RedButton("Close") {
 				@Override
 				protected void onClick() {
@@ -157,40 +142,32 @@ public class WndCheat {
 				}
 			};
 			add(close);
-			close.setRect(0, list.bottom() + MARGIN, width, btnH());
-
+			close.setRect(0, pos + MARGIN, width, btnH());
+	
 			resize(width, (int) close.bottom() + MARGIN);
 		}
-
-		@Override
-		public void offset(int xOffset, int yOffset) {
-		    super.offset(xOffset, yOffset);
-		    if (list != null) {
-		        list.setSize(list.width(), list.height());  // public replacement
-		    }
-		}
 	}
-
+	
 	// ---------------------------------------------------------------- step 2
-
+	
 	public static class ItemList extends Window {
 		private ScrollPane list;
-
+	
 		public ItemList(final String categoryName, final List<Class<? extends Item>> items) {
 			super();
 			final int width = width();
-
+	
 			RenderedTextBlock title = PixelScene.renderTextBlock(categoryName + " (" + items.size() + ")", 9);
 			title.hardlight(TITLE_COLOR);
 			title.maxWidth(width - MARGIN * 2);
 			title.setPos(MARGIN, MARGIN);
 			add(title);
-
+	
 			float top = title.bottom() + MARGIN * 2;
-
+	
 			list = new ScrollPane(new Component());
 			add(list);
-
+	
 			Component content = list.content();
 			float pos = 0;
 			for (final Class<? extends Item> cls : items) {
@@ -206,13 +183,14 @@ public class WndCheat {
 				pos += btnH() + 1;
 			}
 			content.setSize(width, pos);
-
+			content.setPos(0, 0);					// force origin
+	
 			int maxH = (int) (PixelScene.uiCamera.height * 0.75f) - (int) top - btnH() - MARGIN * 3;
-			int h = (int) Math.max(btnH() * 3, Math.min(pos, maxH));
+			int h = (int) Math.max(btnH() * 4, Math.min(pos, maxH));
 			list.setRect(0, top, width, h);
 			list.setSize(width, h);
 			list.scrollTo(0, 0);
-
+	
 			RedButton back = new RedButton("Back") {
 				@Override
 				protected void onClick() {
@@ -222,16 +200,17 @@ public class WndCheat {
 			};
 			add(back);
 			back.setRect(0, list.bottom() + MARGIN, width, btnH());
-
+	
 			resize(width, (int) back.bottom() + MARGIN);
 		}
-
+	
 		@Override
 		public void offset(int xOffset, int yOffset) {
-		    super.offset(xOffset, yOffset);
-		    if (list != null) {
-		        list.setSize(list.width(), list.height());
-		    }
+			super.offset(xOffset, yOffset);
+			if (list != null) {
+				list.setSize(list.width(), list.height());
+				list.scrollTo(0, list.content().camera.scroll.y); // keep current scroll
+			}
 		}
 	}
 
