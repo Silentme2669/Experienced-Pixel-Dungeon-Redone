@@ -151,11 +151,12 @@ public class WndCheat {
 	// ---------------------------------------------------------------- step 2
 	
 	public static class ItemList extends Window {
+		private ScrollPane list;
 	
 		public ItemList(final String categoryName, final List<Class<? extends Item>> items) {
 			super();
 			final int width = width();
-			final int colW = (width - MARGIN) / 2;   // two equal columns
+			final int colW = (width - MARGIN) / 2;
 	
 			RenderedTextBlock title = PixelScene.renderTextBlock(categoryName + " (" + items.size() + ")", 9);
 			title.hardlight(TITLE_COLOR);
@@ -163,7 +164,14 @@ public class WndCheat {
 			title.setPos(MARGIN, MARGIN);
 			add(title);
 	
-			float pos = title.bottom() + MARGIN * 2;
+			float top = title.bottom() + MARGIN * 2;
+	
+			// --- ScrollPane setup ---
+			list = new ScrollPane(new Component());
+			add(list);
+	
+			Component content = list.content();
+			float pos = 0;
 			float leftX  = 0;
 			float rightX = colW + MARGIN;
 	
@@ -176,23 +184,32 @@ public class WndCheat {
 						GameScene.show(new Give(cls, categoryName, items));
 					}
 				};
-				add(btn);
+				content.add(btn);
 	
 				if (i % 2 == 0) {
-					// left column
 					btn.setRect(leftX, pos, colW, btnH());
 				} else {
-					// right column, then advance to next row
 					btn.setRect(rightX, pos, colW, btnH());
 					pos += btnH() + 1;
 				}
 				i++;
 			}
-	
-			// if the last item was on the left, still advance the y
 			if (i % 2 != 0) {
-				pos += btnH() + 1;
+				pos += btnH() + 1; // last item was alone on the left
 			}
+	
+			content.setSize(width, pos);
+			content.setPos(0, 0);
+	
+			// Limit height so the window never becomes huge
+			int maxH = (int) (PixelScene.uiCamera.height * 0.72f) - (int) top - btnH() - MARGIN * 3;
+			int h = (int) Math.max(btnH() * 5, Math.min(pos, maxH));
+	
+			list.setRect(0, top, width, h);
+			// Force a full refresh of the content camera
+			list.setSize(width, h);
+			list.content().setPos(0, 0);
+			list.scrollTo(0, 0);
 	
 			RedButton back = new RedButton("Back") {
 				@Override
@@ -202,9 +219,20 @@ public class WndCheat {
 				}
 			};
 			add(back);
-			back.setRect(0, pos + MARGIN, width, btnH());
+			back.setRect(0, list.bottom() + MARGIN, width, btnH());
 	
 			resize(width, (int) back.bottom() + MARGIN);
+		}
+	
+		@Override
+		public void offset(int xOffset, int yOffset) {
+			super.offset(xOffset, yOffset);
+			if (list != null) {
+				// Re-apply the rect – this is the most reliable way to force
+				// ScrollPane.layout() behaviour when layout() itself is protected
+				list.setRect(list.left(), list.top(), list.width(), list.height());
+				list.content().setPos(0, 0);
+			}
 		}
 	}
 	
