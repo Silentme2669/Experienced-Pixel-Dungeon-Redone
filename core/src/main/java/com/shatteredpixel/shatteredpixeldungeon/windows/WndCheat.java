@@ -172,13 +172,13 @@ public class WndCheat {
 			final int colW = (width - MARGIN) / 2;
 	
 			int totalPages = Math.max(1, (items.size() + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE);
-			if (page >= totalPages) page = totalPages - 1;
-			if (page < 0) page = 0;
+			if (this.page >= totalPages) this.page = totalPages - 1;
+			if (this.page < 0) this.page = 0;
 	
 			// Title with page info
 			String titleText = categoryName + " (" + items.size() + ")";
 			if (totalPages > 1) {
-				titleText += "  " + (page + 1) + "/" + totalPages;
+				titleText += "  " + (this.page + 1) + "/" + totalPages;
 			}
 			RenderedTextBlock title = PixelScene.renderTextBlock(titleText, 9);
 			title.hardlight(TITLE_COLOR);
@@ -190,7 +190,7 @@ public class WndCheat {
 			float leftX  = 0;
 			float rightX = colW + MARGIN;
 	
-			int start = page * ITEMS_PER_PAGE;
+			int start = this.page * ITEMS_PER_PAGE;
 			int end   = Math.min(start + ITEMS_PER_PAGE, items.size());
 	
 			for (int i = start; i < end; i++) {
@@ -220,16 +220,20 @@ public class WndCheat {
 	
 			pos += MARGIN;
 	
+			// Capture values so the anonymous classes are happy
+			final int currentPage = this.page;
+			final int totalPagesFinal = totalPages;
+	
 			// Navigation row
-			if (totalPages > 1) {
+			if (totalPagesFinal > 1) {
 				RedButton prev = new RedButton("◀ Prev") {
 					@Override
 					protected void onClick() {
 						hide();
-						GameScene.show(new ItemList(categoryName, items, page - 1));
+						GameScene.show(new ItemList(categoryName, items, currentPage - 1));
 					}
 				};
-				prev.enable(page > 0);
+				prev.enable(currentPage > 0);
 				add(prev);
 				prev.setRect(0, pos, colW, btnH());
 	
@@ -237,10 +241,10 @@ public class WndCheat {
 					@Override
 					protected void onClick() {
 						hide();
-						GameScene.show(new ItemList(categoryName, items, page + 1));
+						GameScene.show(new ItemList(categoryName, items, currentPage + 1));
 					}
 				};
-				next.enable(page < totalPages - 1);
+				next.enable(currentPage < totalPagesFinal - 1);
 				add(next);
 				next.setRect(rightX, pos, colW, btnH());
 	
