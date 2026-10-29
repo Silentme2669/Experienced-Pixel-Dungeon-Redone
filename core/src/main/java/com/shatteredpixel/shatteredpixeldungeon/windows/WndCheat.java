@@ -151,32 +151,50 @@ public class WndCheat {
 	// ---------------------------------------------------------------- step 2
 	
 	public static class ItemList extends Window {
-		private ScrollPane list;
 	
-		public ItemList(final String categoryName, final List<Class<? extends Item>> items) {
+		private static final int ITEMS_PER_PAGE = 14; // 7 rows × 2 columns
+	
+		private final String categoryName;
+		private final List<Class<? extends Item>> items;
+		private int page = 0;
+	
+		public ItemList(String categoryName, List<Class<? extends Item>> items) {
+			this(categoryName, items, 0);
+		}
+	
+		private ItemList(String categoryName, List<Class<? extends Item>> items, int page) {
 			super();
+			this.categoryName = categoryName;
+			this.items = items;
+			this.page = page;
+	
 			final int width = width();
 			final int colW = (width - MARGIN) / 2;
 	
-			RenderedTextBlock title = PixelScene.renderTextBlock(categoryName + " (" + items.size() + ")", 9);
+			int totalPages = Math.max(1, (items.size() + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE);
+			if (page >= totalPages) page = totalPages - 1;
+			if (page < 0) page = 0;
+	
+			// Title with page info
+			String titleText = categoryName + " (" + items.size() + ")";
+			if (totalPages > 1) {
+				titleText += "  " + (page + 1) + "/" + totalPages;
+			}
+			RenderedTextBlock title = PixelScene.renderTextBlock(titleText, 9);
 			title.hardlight(TITLE_COLOR);
 			title.maxWidth(width - MARGIN * 2);
 			title.setPos(MARGIN, MARGIN);
 			add(title);
 	
-			float top = title.bottom() + MARGIN * 2;
-	
-			// --- ScrollPane setup ---
-			list = new ScrollPane(new Component());
-			add(list);
-	
-			Component content = list.content();
-			float pos = 0;
+			float pos = title.bottom() + MARGIN * 2;
 			float leftX  = 0;
 			float rightX = colW + MARGIN;
 	
-			int i = 0;
-			for (final Class<? extends Item> cls : items) {
+			int start = page * ITEMS_PER_PAGE;
+			int end   = Math.min(start + ITEMS_PER_PAGE, items.size());
+	
+			for (int i = start; i < end; i++) {
+				final Class<? extends Item> cls = items.get(i);
 				RedButton btn = new RedButton(display(cls), 6) {
 					@Override
 					protected void onClick() {
@@ -184,33 +202,52 @@ public class WndCheat {
 						GameScene.show(new Give(cls, categoryName, items));
 					}
 				};
-				content.add(btn);
+				add(btn);
 	
-				if (i % 2 == 0) {
+				int local = i - start;
+				if (local % 2 == 0) {
 					btn.setRect(leftX, pos, colW, btnH());
 				} else {
 					btn.setRect(rightX, pos, colW, btnH());
 					pos += btnH() + 1;
 				}
-				i++;
-			}
-			if (i % 2 != 0) {
-				pos += btnH() + 1; // last item was alone on the left
 			}
 	
-			content.setSize(width, pos);
-			content.setPos(0, 0);
+			// If the last item on the page was in the left column, still advance
+			if ((end - start) % 2 != 0) {
+				pos += btnH() + 1;
+			}
 	
-			// Limit height so the window never becomes huge
-			int maxH = (int) (PixelScene.uiCamera.height * 0.72f) - (int) top - btnH() - MARGIN * 3;
-			int h = (int) Math.max(btnH() * 5, Math.min(pos, maxH));
+			pos += MARGIN;
 	
-			list.setRect(0, top, width, h);
-			// Force a full refresh of the content camera
-			list.setSize(width, h);
-			list.content().setPos(0, 0);
-			list.scrollTo(0, 0);
+			// Navigation row
+			if (totalPages > 1) {
+				RedButton prev = new RedButton("◀ Prev") {
+					@Override
+					protected void onClick() {
+						hide();
+						GameScene.show(new ItemList(categoryName, items, page - 1));
+					}
+				};
+				prev.enable(page > 0);
+				add(prev);
+				prev.setRect(0, pos, colW, btnH());
 	
+				RedButton next = new RedButton("Next ▶") {
+					@Override
+					protected void onClick() {
+						hide();
+						GameScene.show(new ItemList(categoryName, items, page + 1));
+					}
+				};
+				next.enable(page < totalPages - 1);
+				add(next);
+				next.setRect(rightX, pos, colW, btnH());
+	
+				pos += btnH() + 1;
+			}
+	
+			// Back button
 			RedButton back = new RedButton("Back") {
 				@Override
 				protected void onClick() {
@@ -219,20 +256,9 @@ public class WndCheat {
 				}
 			};
 			add(back);
-			back.setRect(0, list.bottom() + MARGIN, width, btnH());
+			back.setRect(0, pos + MARGIN, width, btnH());
 	
 			resize(width, (int) back.bottom() + MARGIN);
-		}
-	
-		@Override
-		public void offset(int xOffset, int yOffset) {
-			super.offset(xOffset, yOffset);
-			if (list != null) {
-				// Re-apply the rect – this is the most reliable way to force
-				// ScrollPane.layout() behaviour when layout() itself is protected
-				list.setRect(list.left(), list.top(), list.width(), list.height());
-				list.content().setPos(0, 0);
-			}
 		}
 	}
 	
