@@ -151,11 +151,11 @@ public class WndCheat {
 	// ---------------------------------------------------------------- step 2
 	
 	public static class ItemList extends Window {
-		private ScrollPane list;
 	
 		public ItemList(final String categoryName, final List<Class<? extends Item>> items) {
 			super();
 			final int width = width();
+			final int colW = (width - MARGIN) / 2;   // two equal columns
 	
 			RenderedTextBlock title = PixelScene.renderTextBlock(categoryName + " (" + items.size() + ")", 9);
 			title.hardlight(TITLE_COLOR);
@@ -163,13 +163,11 @@ public class WndCheat {
 			title.setPos(MARGIN, MARGIN);
 			add(title);
 	
-			float top = title.bottom() + MARGIN * 2;
+			float pos = title.bottom() + MARGIN * 2;
+			float leftX  = 0;
+			float rightX = colW + MARGIN;
 	
-			list = new ScrollPane(new Component());
-			add(list);
-	
-			Component content = list.content();
-			float pos = 0;
+			int i = 0;
 			for (final Class<? extends Item> cls : items) {
 				RedButton btn = new RedButton(display(cls), 6) {
 					@Override
@@ -178,18 +176,23 @@ public class WndCheat {
 						GameScene.show(new Give(cls, categoryName, items));
 					}
 				};
-				content.add(btn);
-				btn.setRect(0, pos, width, btnH());
+				add(btn);
+	
+				if (i % 2 == 0) {
+					// left column
+					btn.setRect(leftX, pos, colW, btnH());
+				} else {
+					// right column, then advance to next row
+					btn.setRect(rightX, pos, colW, btnH());
+					pos += btnH() + 1;
+				}
+				i++;
+			}
+	
+			// if the last item was on the left, still advance the y
+			if (i % 2 != 0) {
 				pos += btnH() + 1;
 			}
-			content.setSize(width, pos);
-			content.setPos(0, 0);					// force origin
-	
-			int maxH = (int) (PixelScene.uiCamera.height * 0.75f) - (int) top - btnH() - MARGIN * 3;
-			int h = (int) Math.max(btnH() * 4, Math.min(pos, maxH));
-			list.setRect(0, top, width, h);
-			list.setSize(width, h);
-			list.scrollTo(0, 0);
 	
 			RedButton back = new RedButton("Back") {
 				@Override
@@ -199,21 +202,12 @@ public class WndCheat {
 				}
 			};
 			add(back);
-			back.setRect(0, list.bottom() + MARGIN, width, btnH());
+			back.setRect(0, pos + MARGIN, width, btnH());
 	
 			resize(width, (int) back.bottom() + MARGIN);
 		}
-	
-		@Override
-		public void offset(int xOffset, int yOffset) {
-			super.offset(xOffset, yOffset);
-			if (list != null) {
-				list.setSize(list.width(), list.height());
-				list.scrollTo(0, list.content().camera.scroll.y); // keep current scroll
-			}
-		}
 	}
-
+	
 	// ---------------------------------------------------------------- step 3
 
 	public static class Give extends Window {
